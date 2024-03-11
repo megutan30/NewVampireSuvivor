@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
@@ -7,6 +5,8 @@ public class EnemyController : MonoBehaviour
     public float moveSpeed = 3f; // 敵の移動速度
     public int maxHealth = 50; // 敵の最大HP
     public int damage = 10; // 敵の攻撃ダメージ
+    public float maxSize = 2f; // 最大サイズ
+    public float minSize = 0.1f; // 最小サイズ
 
     private int currentHealth; // 敵の現在のHP
 
@@ -14,8 +14,8 @@ public class EnemyController : MonoBehaviour
     public float dropChance = 0.05f; // 回復アイテムを落とす確率
 
     Transform player;
-
     Rigidbody rb;
+
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
@@ -40,6 +40,10 @@ public class EnemyController : MonoBehaviour
         // ダメージを受けるとHPを減らす
         currentHealth -= damage;
 
+        // HPに応じてサイズを変更する
+        float newSize = Mathf.Lerp(minSize, maxSize, (float)currentHealth / maxHealth);
+        transform.localScale = new Vector3(newSize, newSize, newSize);
+
         if (currentHealth <= 0)
         {
             // HPが0以下になったら敵を破壊するなどの処理を行う
@@ -60,7 +64,7 @@ public class EnemyController : MonoBehaviour
     void DropRecoveryItem()
     {
         // 回復アイテムを生成して落とす
-        Vector3 pos =transform.position;
+        Vector3 pos = transform.position;
         pos.y += 0.5f;
         Instantiate(recoveryItemPrefab, pos, Quaternion.identity);
     }
@@ -71,7 +75,6 @@ public class EnemyController : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             collision.gameObject.GetComponent<PlayerController>().TakeDamage(damage);
-            //Destroy(gameObject);
         }
     }
 }
