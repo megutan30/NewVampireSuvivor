@@ -120,12 +120,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 1.5
-  maxHealth: 50
+  maxHealth: 150
   damage: 10
   maxSize: 1
   minSize: 0.1
+  damageDisplayDuration: 0.3
+  damageTextPrefab: {fileID: 2466468791589918057, guid: a62b0314eb5e2db47875d2cd0944e881, type: 3}
   recoveryItemPrefab: {fileID: 8515179411728194950, guid: 8754ccc7a380c8b48afe469f52842335, type: 3}
-  dropChance: 0.01
+  dropChance: 0.05
+  reciveAttackCoolTime: 0.2
 --- !u!54 &4445433387064590205
 Rigidbody:
   m_ObjectHideFlags: 0

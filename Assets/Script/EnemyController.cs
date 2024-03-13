@@ -6,12 +6,15 @@ public class EnemyController : MonoBehaviour
     public int maxHealth = 50; // 敵の最大HP
     public int damage = 10; // 敵の攻撃ダメージ
     public float maxSize = 2f; // 最大サイズ
-    public float minSize = 0.1f; // 最小サイズ
-
-    private int currentHealth; // 敵の現在のHP
-
+    public float minSize = 0.5f; // 最小サイズ
+    public float damageDisplayDuration = 1f; // ダメージ表示の持続時間
+    public GameObject damageTextPrefab; // ダメージ表示用テキストのプレハブ
     public GameObject recoveryItemPrefab; // 回復アイテムのプレハブ
     public float dropChance = 0.05f; // 回復アイテムを落とす確率
+    public float reciveAttackCoolTime = 0.1f;
+
+    private float coolTime= 0f;
+    private int currentHealth; // 敵の現在のHP
 
     Transform player;
     Rigidbody rb;
@@ -44,11 +47,22 @@ public class EnemyController : MonoBehaviour
         float newSize = Mathf.Lerp(minSize, maxSize, (float)currentHealth / maxHealth);
         transform.localScale = new Vector3(newSize, newSize, newSize);
 
+        // ダメージテキストを表示する
+        ShowDamageText(damage);
+
         if (currentHealth <= 0)
         {
             // HPが0以下になったら敵を破壊するなどの処理を行う
             Die();
         }
+    }
+
+    void ShowDamageText(int damage)
+    {
+        GameObject damageTextObject = Instantiate(damageTextPrefab, transform.position, Quaternion.identity);
+        damageTextObject.transform.Rotate(new Vector3(90, 0, 0)); // X軸を中心に90度回転
+        damageTextObject.GetComponent<TextMesh>().text = damage.ToString();
+        Destroy(damageTextObject, damageDisplayDuration);
     }
 
     void Die()
@@ -58,7 +72,9 @@ public class EnemyController : MonoBehaviour
         {
             DropRecoveryItem();
         }
-        Destroy(gameObject);
+        // オブジェクトを非アクティブにする代わりに、一定時間後に破棄する
+        gameObject.SetActive(false);
+        Destroy(gameObject, damageDisplayDuration);
     }
 
     void DropRecoveryItem()
@@ -75,6 +91,18 @@ public class EnemyController : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             collision.gameObject.GetComponent<PlayerController>().TakeDamage(damage);
+        }
+    }
+    void OnCollisionStay(Collision collision)
+    {
+        coolTime += Time.deltaTime;
+        Debug.Log(coolTime);
+        if (coolTime < reciveAttackCoolTime) return;
+        // 衝突したオブジェクトがプレイヤーであればダメージを与える
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            collision.gameObject.GetComponent<PlayerController>().TakeDamage(damage);
+            coolTime = 0f;
         }
     }
 }

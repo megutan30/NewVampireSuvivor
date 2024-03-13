@@ -10,13 +10,15 @@ public class AttackController : MonoBehaviour
 
     public bool switchAttackMethod =false;// 攻撃の仕組みを切り替え
 
+    public Transform hpGaugeTransform; // HPゲージのTransformコンポーネント
+
     private PlayerController playerController; // プレイヤーコントローラー
     private float timer; // 攻撃の間隔を管理するタイマー
 
     void Start()
     {
         playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-
+        attackInterval = playerController.minInterval;
         // 初期の攻撃範囲を設定する
         SetAttackRadius();
     }
@@ -86,10 +88,15 @@ public class AttackController : MonoBehaviour
             if (nearestEnemy != null)
             {
                 // プレイヤーに最も近い敵の方向ベクトルを計算し、正規化し半径分離す
-                Vector3 direction = (nearestEnemy.transform.position - playerPosition).normalized * (gameObject.transform.localScale.x / 2);
+                Vector3 direction = (nearestEnemy.transform.position - playerPosition).normalized;
+                Vector3 pos = direction * (gameObject.transform.localScale.x / 2);
 
                 // 攻撃範囲のオブジェクトをプレイヤーの方向に移動する
-                transform.position = playerPosition + direction;
+                transform.position = playerPosition + pos;
+
+                // HPゲージも攻撃方向を向く（X軸回転90度）
+                Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+                hpGaugeTransform.rotation = Quaternion.Euler(90f, targetRotation.eulerAngles.y - 90f, 0f);
 
                 // 攻撃範囲内にある敵にダメージを与える
                 Collider[] colliders = Physics.OverlapSphere(transform.position, transform.localScale.x / 2);
